@@ -138,4 +138,51 @@ public class SlangDictionaryApp extends JFrame {
         scrollPane.setPreferredSize(new Dimension(400, 300));
         JOptionPane.showMessageDialog(this, scrollPane, "Search Results", JOptionPane.INFORMATION_MESSAGE);
     }
+    
+    private void addNewSlang() {
+        String slang = JOptionPane.showInputDialog(this, "Enter a new slang word:");
+        if (slang == null || slang.isEmpty()) return;
+
+        if (slangMap.containsKey(slang)) {
+            String[] options = {"Overwrite", "Duplicate", "Cancel"};
+            int response = JOptionPane.showOptionDialog(
+                    this,
+                    "Slang word already exists. What would you like to do?",
+                    "Duplicate or Overwrite?",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    options,
+                    options[0]
+            );
+
+            if (response == 0) { // Overwrite
+                String definition = JOptionPane.showInputDialog(this, "Enter the new definition:");
+                if (definition == null || definition.isEmpty()) return;
+                slangMap.put(slang, definition);
+                saveToFile();
+                JOptionPane.showMessageDialog(this, "Slang word overwritten successfully!");
+            } else if (response == 1) { // Duplicate
+                String newSlang = JOptionPane.showInputDialog(this, "Enter a new slang word for duplication:");
+                if (newSlang == null || newSlang.isEmpty()) return;
+
+                if (slangMap.containsKey(newSlang)) {
+                    JOptionPane.showMessageDialog(this, "Duplicate slang word already exists! Operation canceled.");
+                    return;
+                }
+
+                String definition = slangMap.get(slang); // Keep the same definition as the original
+                slangMap.put(newSlang, definition);
+                saveToFile();
+                JOptionPane.showMessageDialog(this, "Duplicate slang word added successfully!");
+            }
+        } else {
+            String definition = JOptionPane.showInputDialog(this, "Enter the definition:");
+            if (definition == null || definition.isEmpty()) return;
+
+            slangMap.put(slang, definition);
+            saveToFile();
+            JOptionPane.showMessageDialog(this, "Slang word added successfully!");
+        }
+    }
 }
