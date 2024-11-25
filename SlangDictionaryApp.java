@@ -108,4 +108,34 @@ public class SlangDictionaryApp extends JFrame {
             }
         }
     }
+    private void searchSlangWord() {
+        String slang = JOptionPane.showInputDialog(this, "Enter a slang word:");
+        if (slang == null || slang.isEmpty()) return;
+
+        history.add(slang);
+        String definition = slangMap.getOrDefault(slang, "Not Found");
+        JOptionPane.showMessageDialog(this, slang + " means: " + definition);
+    }
+
+    private void searchByDefinition() {
+        String keyword = JOptionPane.showInputDialog(this, "Enter a definition keyword:");
+        if (keyword == null || keyword.isEmpty()) return;
+
+        List<String> results = new ArrayList<>();
+        for (Map.Entry<String, String> entry : slangMap.entrySet()) {
+            if (entry.getValue().toLowerCase().contains(keyword.toLowerCase())) {
+                results.add(entry.getKey() + " = " + entry.getValue());
+            }
+        }
+
+        if (results.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No matches found!");
+            return;
+        }
+
+        JList<String> resultList = new JList<>(results.toArray(new String[0]));
+        JScrollPane scrollPane = new JScrollPane(resultList);
+        scrollPane.setPreferredSize(new Dimension(400, 300));
+        JOptionPane.showMessageDialog(this, scrollPane, "Search Results", JOptionPane.INFORMATION_MESSAGE);
+    }
 }
