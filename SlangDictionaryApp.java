@@ -87,4 +87,25 @@ public class SlangDictionaryApp extends JFrame {
             JOptionPane.showMessageDialog(this, "Error loading file: " + e.getMessage());
         }
     }
+    private void saveToFile() {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(workingFilePath))) {
+            for (Map.Entry<String, String> entry : slangMap.entrySet()) {
+                bw.write(entry.getKey() + "`" + entry.getValue());
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error saving file: " + e.getMessage());
+        }
+    }
+
+    private void copyFile(File source, File destination) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(source));
+             BufferedWriter bw = new BufferedWriter(new FileWriter(destination))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                bw.write(line);
+                bw.newLine();
+            }
+        }
+    }
 }
