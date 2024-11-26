@@ -215,4 +215,20 @@ public class SlangDictionaryApp extends JFrame {
             JOptionPane.showMessageDialog(this, "Slang deleted successfully!");
         }
     }
+
+    private void viewHistory() {
+        String message = history.isEmpty() ? "No history available!" : String.join("\n", history);
+        JOptionPane.showMessageDialog(this, message);
+    }
+
+    private void showRandomSlang() {
+        List<String> keys = new ArrayList<>(slangMap.keySet());
+        if (keys.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No slang words available!");
+            return;
+        }
+
+        String randomSlang = keys.get(new Random().nextInt(keys.size()));
+        JOptionPane.showMessageDialog(this, randomSlang + " = " + slangMap.get(randomSlang));
+    }
 }
