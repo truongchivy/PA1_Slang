@@ -231,4 +231,52 @@ public class SlangDictionaryApp extends JFrame {
         String randomSlang = keys.get(new Random().nextInt(keys.size()));
         JOptionPane.showMessageDialog(this, randomSlang + " = " + slangMap.get(randomSlang));
     }
+
+    private void startQuiz() {
+        List<String> keys = new ArrayList<>(slangMap.keySet());
+        if (keys.size() < 4) {
+            JOptionPane.showMessageDialog(this, "Not enough slang words for a quiz!");
+            return;
+        }
+
+        boolean askForSlang = new Random().nextBoolean();
+        String correctSlang = keys.get(new Random().nextInt(keys.size()));
+        String correctDefinition = slangMap.get(correctSlang);
+
+        List<String> options = new ArrayList<>(keys);
+        Collections.shuffle(options);
+        options = options.subList(0, 4);
+
+        if (askForSlang) {
+            if (!options.contains(correctSlang)) {
+                options.set(new Random().nextInt(4), correctSlang);
+            }
+            String[] choices = options.toArray(new String[0]);
+            String selected = (String) JOptionPane.showInputDialog(
+                    this, "Which slang word matches this definition?\n" + correctDefinition,
+                    "Quiz", JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]
+            );
+
+            if (correctSlang.equals(selected)) {
+                JOptionPane.showMessageDialog(this, "Correct!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Wrong! The correct answer is: " + correctSlang);
+            }
+        } else {
+            if (!options.contains(correctSlang)) {
+                options.set(new Random().nextInt(4), correctSlang);
+            }
+            String[] choices = options.stream().map(slangMap::get).toArray(String[]::new);
+            String selected = (String) JOptionPane.showInputDialog(
+                    this, "What does the slang word \"" + correctSlang + "\" mean?",
+                    "Quiz", JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]
+            );
+
+            if (correctDefinition.equals(selected)) {
+                JOptionPane.showMessageDialog(this, "Correct!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Wrong! The correct answer is: " + correctDefinition);
+            }
+        }
+    }
 }
