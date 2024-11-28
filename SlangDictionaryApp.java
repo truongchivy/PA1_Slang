@@ -279,4 +279,34 @@ public class SlangDictionaryApp extends JFrame {
             }
         }
     }
+
+    private void resetSlangWords() {
+        int response = JOptionPane.showConfirmDialog(
+                this,
+                "Are you sure you want to reset the slang words to the original list? This will overwrite all changes.",
+                "Confirm Reset",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (response == JOptionPane.YES_OPTION) {
+            try {
+                File originalFile = new File(originalFilePath);
+                File newSlangFile = new File(workingFilePath);
+
+                copyFile(originalFile, newSlangFile); // Overwrite new_slang.txt with slang.txt
+                slangMap.clear();
+                loadFromFile(); // Reload slangMap from the new_slang.txt
+                JOptionPane.showMessageDialog(this, "Slang words reset to original list successfully!");
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "Error resetting slang words: " + e.getMessage());
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            SlangDictionaryApp app = new SlangDictionaryApp();
+            app.setVisible(true);
+        });
+    }
 }
