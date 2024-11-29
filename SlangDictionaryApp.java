@@ -19,48 +19,50 @@ public class SlangDictionaryApp extends JFrame {
         setTitle("Slang Dictionary");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
 
-        JMenuBar menuBar = new JMenuBar();
-        JMenu menu = new JMenu("Menu");
+        // Header
+        JLabel headerLabel = new JLabel("Slang Dictionary", SwingConstants.CENTER);
+        headerLabel.setFont(new Font("Arial", Font.BOLD, 32));
+        add(headerLabel, BorderLayout.NORTH);
 
-        JMenuItem searchSlang = new JMenuItem("Search by Slang");
-        JMenuItem searchDefinition = new JMenuItem("Search by Definition");
-        JMenuItem addSlang = new JMenuItem("Add Slang");
-        JMenuItem editSlang = new JMenuItem("Edit Slang");
-        JMenuItem deleteSlang = new JMenuItem("Delete Slang");
-        JMenuItem historyView = new JMenuItem("View History");
-        JMenuItem randomSlang = new JMenuItem("Random Slang");
-        JMenuItem quiz = new JMenuItem("Quiz");
-        JMenuItem resetSlang = new JMenuItem("Reset to Original");
+        // Buttons for functions
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(3, 3, 10, 10)); // 3 rows, 3 columns, with spacing
 
-        menu.add(searchSlang);
-        menu.add(searchDefinition);
-        menu.add(addSlang);
-        menu.add(editSlang);
-        menu.add(deleteSlang);
-        menu.add(historyView);
-        menu.add(randomSlang);
-        menu.add(quiz);
-        menu.add(resetSlang);
+        JButton searchSlangBtn = new JButton("Search by Slang");
+        JButton searchDefinitionBtn = new JButton("Search by Definition");
+        JButton addSlangBtn = new JButton("Add Slang");
+        JButton editSlangBtn = new JButton("Edit Slang");
+        JButton deleteSlangBtn = new JButton("Delete Slang");
+        JButton viewHistoryBtn = new JButton("View History");
+        JButton randomSlangBtn = new JButton("Random Slang");
+        JButton quizBtn = new JButton("Quiz");
+        JButton resetBtn = new JButton("Reset to Original");
 
-        menuBar.add(menu);
-        setJMenuBar(menuBar);
+        // Add buttons to panel
+        buttonPanel.add(searchSlangBtn);
+        buttonPanel.add(searchDefinitionBtn);
+        buttonPanel.add(addSlangBtn);
+        buttonPanel.add(editSlangBtn);
+        buttonPanel.add(deleteSlangBtn);
+        buttonPanel.add(viewHistoryBtn);
+        buttonPanel.add(randomSlangBtn);
+        buttonPanel.add(quizBtn);
+        buttonPanel.add(resetBtn);
 
-        JPanel panel = new JPanel(new BorderLayout());
-        JLabel welcomeLabel = new JLabel("Welcome to the Slang Dictionary!", SwingConstants.CENTER);
-        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        panel.add(welcomeLabel, BorderLayout.CENTER);
-        add(panel);
+        add(buttonPanel, BorderLayout.CENTER);
 
-        searchSlang.addActionListener(e -> searchSlangWord());
-        searchDefinition.addActionListener(e -> searchByDefinition());
-        addSlang.addActionListener(e -> addNewSlang());
-        editSlang.addActionListener(e -> editSlangWord());
-        deleteSlang.addActionListener(e -> deleteSlangWord());
-        historyView.addActionListener(e -> viewHistory());
-        randomSlang.addActionListener(e -> showRandomSlang());
-        quiz.addActionListener(e -> startQuiz());
-        resetSlang.addActionListener(e -> resetSlangWords());
+        // Button Actions
+        searchSlangBtn.addActionListener(e -> searchSlangWord());
+        searchDefinitionBtn.addActionListener(e -> searchByDefinition());
+        addSlangBtn.addActionListener(e -> addNewSlang());
+        editSlangBtn.addActionListener(e -> editSlangWord());
+        deleteSlangBtn.addActionListener(e -> deleteSlangWord());
+        viewHistoryBtn.addActionListener(e -> viewHistory());
+        randomSlangBtn.addActionListener(e -> showRandomSlang());
+        quizBtn.addActionListener(e -> startQuiz());
+        resetBtn.addActionListener(e -> resetSlangWords());
     }
 
     private void loadFromFile() {
