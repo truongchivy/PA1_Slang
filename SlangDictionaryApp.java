@@ -9,7 +9,6 @@ public class SlangDictionaryApp extends JFrame {
     private List<String> history = new ArrayList<>();
     private final String originalFilePath = "slang.txt";
     private final String workingFilePath = "new_slang.txt";
-    
 
     public SlangDictionaryApp() {
         initUI();
@@ -219,32 +218,57 @@ public class SlangDictionaryApp extends JFrame {
 
     private void editSlangWord() {
         String slang = JOptionPane.showInputDialog(this, "Enter the slang word to edit:");
-        if (slang == null || slang.isEmpty() || !slangMap.containsKey(slang)) {
+        if (slang == null || slang.isEmpty()) return;
+    
+        // Search for existing slang (case-insensitive)
+        String existingSlang = null;
+        for (String key : slangMap.keySet()) {
+            if (key.equalsIgnoreCase(slang)) {
+                existingSlang = key;
+                break;
+            }
+        }
+    
+        if (existingSlang == null) {
             JOptionPane.showMessageDialog(this, "Slang not found!");
             return;
         }
-
-        String definition = JOptionPane.showInputDialog(this, "Enter the new definition:");
-        if (definition == null || definition.isEmpty()) return;
-
-        slangMap.put(slang, new ArrayList<>(Collections.singletonList(definition)));
+    
+        String newDefinition = JOptionPane.showInputDialog(this, "Enter the new definition:");
+        if (newDefinition == null || newDefinition.isEmpty()) return;
+    
+        slangMap.put(existingSlang, new ArrayList<>(Collections.singletonList(newDefinition)));
         saveToFile();
         JOptionPane.showMessageDialog(this, "Slang updated successfully!");
     }
-
+    
 
     private void deleteSlangWord() {
         String slang = JOptionPane.showInputDialog(this, "Enter the slang word to delete:");
-        if (slang == null || slang.isEmpty() || !slangMap.containsKey(slang)) {
+        if (slang == null || slang.isEmpty()) return;
+    
+        // Search for existing slang (case-insensitive)
+        String existingSlang = null;
+        for (String key : slangMap.keySet()) {
+            if (key.equalsIgnoreCase(slang)) {
+                existingSlang = key;
+                break;
+            }
+        }
+    
+        if (existingSlang == null) {
             JOptionPane.showMessageDialog(this, "Slang not found!");
             return;
         }
-
-        slangMap.remove(slang);
-        saveToFile();
-        JOptionPane.showMessageDialog(this, "Slang deleted successfully!");
+    
+        int response = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete the slang: " + existingSlang + "?");
+        if (response == JOptionPane.YES_OPTION) {
+            slangMap.remove(existingSlang);
+            saveToFile();
+            JOptionPane.showMessageDialog(this, "Slang deleted successfully!");
+        }
     }
-
+    
 
     private void viewHistory() {
         String message = history.isEmpty() ? "No history available!" : String.join("\n", history);
