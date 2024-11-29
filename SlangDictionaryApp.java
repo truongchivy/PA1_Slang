@@ -5,15 +5,17 @@ import java.util.List;
 import javax.swing.*;
 
 public class SlangDictionaryApp extends JFrame {
-    private HashMap<String, String> slangMap = new HashMap<>();
+    private HashMap<String, List<String>> slangMap = new HashMap<>(); // Stores slang and multiple definitions
     private List<String> history = new ArrayList<>();
     private final String originalFilePath = "slang.txt";
     private final String workingFilePath = "new_slang.txt";
+    
 
     public SlangDictionaryApp() {
         initUI();
         loadFromFile();
     }
+
 
     private void initUI() {
         setTitle("Slang Dictionary");
@@ -30,40 +32,33 @@ public class SlangDictionaryApp extends JFrame {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(3, 3, 10, 10)); // 3 rows, 3 columns, with spacing
 
-        JButton searchSlangBtn = new JButton("Search by Slang");
-        JButton searchDefinitionBtn = new JButton("Search by Definition");
-        JButton addSlangBtn = new JButton("Add Slang");
-        JButton editSlangBtn = new JButton("Edit Slang");
-        JButton deleteSlangBtn = new JButton("Delete Slang");
-        JButton viewHistoryBtn = new JButton("View History");
-        JButton randomSlangBtn = new JButton("Random Slang");
-        JButton quizBtn = new JButton("Quiz");
-        JButton resetBtn = new JButton("Reset to Original");
+        String[] buttonTexts = {
+            "Search by Slang", "Search by Definition", "Add Slang",
+            "Edit Slang", "Delete Slang", "View History",
+            "Random Slang", "Quiz", "Reset to Original"
+        };
 
-        // Add buttons to panel
-        buttonPanel.add(searchSlangBtn);
-        buttonPanel.add(searchDefinitionBtn);
-        buttonPanel.add(addSlangBtn);
-        buttonPanel.add(editSlangBtn);
-        buttonPanel.add(deleteSlangBtn);
-        buttonPanel.add(viewHistoryBtn);
-        buttonPanel.add(randomSlangBtn);
-        buttonPanel.add(quizBtn);
-        buttonPanel.add(resetBtn);
+        JButton[] buttons = new JButton[buttonTexts.length];
+        for (int i = 0; i < buttonTexts.length; i++) {
+            buttons[i] = new JButton(buttonTexts[i]);
+            buttons[i].setFont(new Font("Arial", Font.PLAIN, 20));
+            buttonPanel.add(buttons[i]);
+        }
 
         add(buttonPanel, BorderLayout.CENTER);
 
         // Button Actions
-        searchSlangBtn.addActionListener(e -> searchSlangWord());
-        searchDefinitionBtn.addActionListener(e -> searchByDefinition());
-        addSlangBtn.addActionListener(e -> addNewSlang());
-        editSlangBtn.addActionListener(e -> editSlangWord());
-        deleteSlangBtn.addActionListener(e -> deleteSlangWord());
-        viewHistoryBtn.addActionListener(e -> viewHistory());
-        randomSlangBtn.addActionListener(e -> showRandomSlang());
-        quizBtn.addActionListener(e -> startQuiz());
-        resetBtn.addActionListener(e -> resetSlangWords());
+        buttons[0].addActionListener(e -> searchSlangWord());
+        buttons[1].addActionListener(e -> searchByDefinition());
+        buttons[2].addActionListener(e -> addNewSlang());
+        buttons[3].addActionListener(e -> editSlangWord());
+        buttons[4].addActionListener(e -> deleteSlangWord());
+        buttons[5].addActionListener(e -> viewHistory());
+        buttons[6].addActionListener(e -> showRandomSlang());
+        buttons[7].addActionListener(e -> startQuiz());
+        buttons[8].addActionListener(e -> resetSlangWords());
     }
+
 
     private void loadFromFile() {
         File newSlangFile = new File(workingFilePath);
@@ -81,7 +76,7 @@ public class SlangDictionaryApp extends JFrame {
                 while ((line = br.readLine()) != null) {
                     String[] parts = line.split("`", 2);
                     if (parts.length == 2) {
-                        slangMap.put(parts[0], parts[1]);
+                        slangMap.computeIfAbsent(parts[0], k -> new ArrayList<>()).add(parts[1]);
                     }
                 }
             }
@@ -89,16 +84,21 @@ public class SlangDictionaryApp extends JFrame {
             JOptionPane.showMessageDialog(this, "Error loading file: " + e.getMessage());
         }
     }
+
+
     private void saveToFile() {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(workingFilePath))) {
-            for (Map.Entry<String, String> entry : slangMap.entrySet()) {
-                bw.write(entry.getKey() + "`" + entry.getValue());
-                bw.newLine();
+            for (Map.Entry<String, List<String>> entry : slangMap.entrySet()) {
+                for (String definition : entry.getValue()) {
+                    bw.write(entry.getKey() + "`" + definition);
+                    bw.newLine();
+                }
             }
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Error saving file: " + e.getMessage());
         }
     }
+
 
     private void copyFile(File source, File destination) throws IOException {
         try (BufferedReader br = new BufferedReader(new FileReader(source));
@@ -110,23 +110,50 @@ public class SlangDictionaryApp extends JFrame {
             }
         }
     }
+
+
     private void searchSlangWord() {
         String slang = JOptionPane.showInputDialog(this, "Enter a slang word:");
         if (slang == null || slang.isEmpty()) return;
-
+    
         history.add(slang);
-        String definition = slangMap.getOrDefault(slang, "Not Found");
-        JOptionPane.showMessageDialog(this, slang + " means: " + definition);
-    }
+        // Search case-insensitively
+        List<String> definitions = null;
+        for (String key : slangMap.keySet()) {
+            if (key.equalsIgnoreCase(slang)) {
+                definitions = slangMap.get(key);
+                break;
+            }
+        }
+    
+        if (definitions == null || definitions.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No slang found!");
+            return;
+        }
+    
+        // Show definitions split by '|'
+        List<String> formattedDefinitions = new ArrayList<>();
+        for (String definition : definitions) {
+            formattedDefinitions.addAll(Arrays.asList(definition.split("\\| ")));
+        }
+    
+        JList<String> resultList = new JList<>(formattedDefinitions.toArray(new String[0]));
+        JScrollPane scrollPane = new JScrollPane(resultList);
+        scrollPane.setPreferredSize(new Dimension(400, 300));
+        JOptionPane.showMessageDialog(this, scrollPane, "Search Results", JOptionPane.INFORMATION_MESSAGE);
+    }    
+
 
     private void searchByDefinition() {
         String keyword = JOptionPane.showInputDialog(this, "Enter a definition keyword:");
         if (keyword == null || keyword.isEmpty()) return;
 
         List<String> results = new ArrayList<>();
-        for (Map.Entry<String, String> entry : slangMap.entrySet()) {
-            if (entry.getValue().toLowerCase().contains(keyword.toLowerCase())) {
-                results.add(entry.getKey() + " = " + entry.getValue());
+        for (Map.Entry<String, List<String>> entry : slangMap.entrySet()) {
+            for (String definition : entry.getValue()) {
+                if (definition.toLowerCase().contains(keyword.toLowerCase())) {
+                    results.add(entry.getKey() + " = " + definition);
+                }
             }
         }
 
@@ -140,16 +167,29 @@ public class SlangDictionaryApp extends JFrame {
         scrollPane.setPreferredSize(new Dimension(400, 300));
         JOptionPane.showMessageDialog(this, scrollPane, "Search Results", JOptionPane.INFORMATION_MESSAGE);
     }
-    
+
+
     private void addNewSlang() {
         String slang = JOptionPane.showInputDialog(this, "Enter a new slang word:");
         if (slang == null || slang.isEmpty()) return;
-
-        if (slangMap.containsKey(slang)) {
-            String[] options = {"Overwrite", "Duplicate", "Cancel"};
+    
+        String definition = JOptionPane.showInputDialog(this, "Enter the definition:");
+        if (definition == null || definition.isEmpty()) return;
+    
+        // Search for existing slang (case-insensitive)
+        String existingSlang = null;
+        for (String key : slangMap.keySet()) {
+            if (key.equalsIgnoreCase(slang)) {
+                existingSlang = key;
+                break;
+            }
+        }
+    
+        if (existingSlang != null) {
+            String[] options = {"Overwrite", "Add to Existing"};
             int response = JOptionPane.showOptionDialog(
                     this,
-                    "Slang word already exists. What would you like to do?",
+                    "Slang word already exists (as " + existingSlang + "). What would you like to do?",
                     "Duplicate or Overwrite?",
                     JOptionPane.DEFAULT_OPTION,
                     JOptionPane.QUESTION_MESSAGE,
@@ -157,37 +197,26 @@ public class SlangDictionaryApp extends JFrame {
                     options,
                     options[0]
             );
-
+    
             if (response == 0) { // Overwrite
-                String definition = JOptionPane.showInputDialog(this, "Enter the new definition:");
-                if (definition == null || definition.isEmpty()) return;
-                slangMap.put(slang, definition);
-                saveToFile();
-                JOptionPane.showMessageDialog(this, "Slang word overwritten successfully!");
-            } else if (response == 1) { // Duplicate
-                String newSlang = JOptionPane.showInputDialog(this, "Enter a new slang word for duplication:");
-                if (newSlang == null || newSlang.isEmpty()) return;
-
-                if (slangMap.containsKey(newSlang)) {
-                    JOptionPane.showMessageDialog(this, "Duplicate slang word already exists! Operation canceled.");
-                    return;
+                slangMap.put(existingSlang, new ArrayList<>(Collections.singletonList(definition)));
+            } else if (response == 1) { // Add to Existing
+                List<String> existingDefinitions = slangMap.get(existingSlang);
+                String current = existingDefinitions.get(0); // Original format with '|'
+                if (!current.contains(definition)) { // Avoid duplicate meanings
+                    current += "| " + definition;
+                    existingDefinitions.set(0, current); // Update the definition
                 }
-
-                String definition = slangMap.get(slang); // Keep the same definition as the original
-                slangMap.put(newSlang, definition);
-                saveToFile();
-                JOptionPane.showMessageDialog(this, "Duplicate slang word added successfully!");
             }
         } else {
-            String definition = JOptionPane.showInputDialog(this, "Enter the definition:");
-            if (definition == null || definition.isEmpty()) return;
-
-            slangMap.put(slang, definition);
-            saveToFile();
-            JOptionPane.showMessageDialog(this, "Slang word added successfully!");
+            slangMap.put(slang, new ArrayList<>(Collections.singletonList(definition)));
         }
-    }
     
+        saveToFile();
+        JOptionPane.showMessageDialog(this, "Slang added successfully!");
+    }        
+
+
     private void editSlangWord() {
         String slang = JOptionPane.showInputDialog(this, "Enter the slang word to edit:");
         if (slang == null || slang.isEmpty() || !slangMap.containsKey(slang)) {
@@ -198,10 +227,11 @@ public class SlangDictionaryApp extends JFrame {
         String definition = JOptionPane.showInputDialog(this, "Enter the new definition:");
         if (definition == null || definition.isEmpty()) return;
 
-        slangMap.put(slang, definition);
+        slangMap.put(slang, new ArrayList<>(Collections.singletonList(definition)));
         saveToFile();
         JOptionPane.showMessageDialog(this, "Slang updated successfully!");
     }
+
 
     private void deleteSlangWord() {
         String slang = JOptionPane.showInputDialog(this, "Enter the slang word to delete:");
@@ -210,18 +240,17 @@ public class SlangDictionaryApp extends JFrame {
             return;
         }
 
-        int response = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete?");
-        if (response == JOptionPane.YES_OPTION) {
-            slangMap.remove(slang);
-            saveToFile();
-            JOptionPane.showMessageDialog(this, "Slang deleted successfully!");
-        }
+        slangMap.remove(slang);
+        saveToFile();
+        JOptionPane.showMessageDialog(this, "Slang deleted successfully!");
     }
+
 
     private void viewHistory() {
         String message = history.isEmpty() ? "No history available!" : String.join("\n", history);
         JOptionPane.showMessageDialog(this, message);
     }
+
 
     private void showRandomSlang() {
         List<String> keys = new ArrayList<>(slangMap.keySet());
@@ -231,8 +260,11 @@ public class SlangDictionaryApp extends JFrame {
         }
 
         String randomSlang = keys.get(new Random().nextInt(keys.size()));
-        JOptionPane.showMessageDialog(this, randomSlang + " = " + slangMap.get(randomSlang));
+        List<String> definitions = slangMap.get(randomSlang);
+        String message = randomSlang + " = " + String.join(", ", definitions);
+        JOptionPane.showMessageDialog(this, message);
     }
+
 
     private void startQuiz() {
         List<String> keys = new ArrayList<>(slangMap.keySet());
@@ -241,46 +273,31 @@ public class SlangDictionaryApp extends JFrame {
             return;
         }
 
-        boolean askForSlang = new Random().nextBoolean();
         String correctSlang = keys.get(new Random().nextInt(keys.size()));
-        String correctDefinition = slangMap.get(correctSlang);
+        List<String> definitions = slangMap.get(correctSlang);
+        String correctDefinition = definitions.get(new Random().nextInt(definitions.size()));
 
         List<String> options = new ArrayList<>(keys);
         Collections.shuffle(options);
         options = options.subList(0, 4);
 
-        if (askForSlang) {
-            if (!options.contains(correctSlang)) {
-                options.set(new Random().nextInt(4), correctSlang);
-            }
-            String[] choices = options.toArray(new String[0]);
-            String selected = (String) JOptionPane.showInputDialog(
-                    this, "Which slang word matches this definition?\n" + correctDefinition,
-                    "Quiz", JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]
-            );
+        if (!options.contains(correctSlang)) {
+            options.set(new Random().nextInt(4), correctSlang);
+        }
 
-            if (correctSlang.equals(selected)) {
-                JOptionPane.showMessageDialog(this, "Correct!");
-            } else {
-                JOptionPane.showMessageDialog(this, "Wrong! The correct answer is: " + correctSlang);
-            }
+        String[] choices = options.toArray(new String[0]);
+        String selected = (String) JOptionPane.showInputDialog(
+                this, "Which slang word matches this definition?\n" + correctDefinition,
+                "Quiz", JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]
+        );
+
+        if (correctSlang.equals(selected)) {
+            JOptionPane.showMessageDialog(this, "Correct!");
         } else {
-            if (!options.contains(correctSlang)) {
-                options.set(new Random().nextInt(4), correctSlang);
-            }
-            String[] choices = options.stream().map(slangMap::get).toArray(String[]::new);
-            String selected = (String) JOptionPane.showInputDialog(
-                    this, "What does the slang word \"" + correctSlang + "\" mean?",
-                    "Quiz", JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]
-            );
-
-            if (correctDefinition.equals(selected)) {
-                JOptionPane.showMessageDialog(this, "Correct!");
-            } else {
-                JOptionPane.showMessageDialog(this, "Wrong! The correct answer is: " + correctDefinition);
-            }
+            JOptionPane.showMessageDialog(this, "Wrong! The correct answer is: " + correctSlang);
         }
     }
+
 
     private void resetSlangWords() {
         int response = JOptionPane.showConfirmDialog(
@@ -295,15 +312,16 @@ public class SlangDictionaryApp extends JFrame {
                 File originalFile = new File(originalFilePath);
                 File newSlangFile = new File(workingFilePath);
 
-                copyFile(originalFile, newSlangFile); // Overwrite new_slang.txt with slang.txt
+                copyFile(originalFile, newSlangFile);
                 slangMap.clear();
-                loadFromFile(); // Reload slangMap from the new_slang.txt
+                loadFromFile();
                 JOptionPane.showMessageDialog(this, "Slang words reset to original list successfully!");
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(this, "Error resetting slang words: " + e.getMessage());
             }
         }
     }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
