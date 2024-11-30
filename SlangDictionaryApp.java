@@ -291,28 +291,74 @@ public class SlangDictionaryApp extends JFrame {
 
 
     private void startQuiz() {
-        List<String> keys = new ArrayList<>(slangMap.keySet());
-        if (keys.size() < 4) {
-            JOptionPane.showMessageDialog(this, "Not enough slang words for a quiz!");
-            return;
-        }
+    List<String> keys = new ArrayList<>(slangMap.keySet());
+    if (keys.size() < 4) {
+        JOptionPane.showMessageDialog(this, "Not enough slang words for a quiz!");
+        return;
+    }
 
+    // Decide quiz type: 50/50 chance
+    boolean askForDefinition = new Random().nextBoolean();
+
+    if (askForDefinition) {
+        // Style 1: Ask for definition
         String correctSlang = keys.get(new Random().nextInt(keys.size()));
         List<String> definitions = slangMap.get(correctSlang);
         String correctDefinition = definitions.get(new Random().nextInt(definitions.size()));
 
-        List<String> options = new ArrayList<>(keys);
-        Collections.shuffle(options);
-        options = options.subList(0, 4);
-
-        if (!options.contains(correctSlang)) {
-            options.set(new Random().nextInt(4), correctSlang);
+        // Create 4 options with definitions
+        List<String> options = new ArrayList<>();
+        options.add(correctDefinition);
+        while (options.size() < 4) {
+            String randomSlang = keys.get(new Random().nextInt(keys.size()));
+            List<String> randomDefinitions = slangMap.get(randomSlang);
+            String randomDefinition = randomDefinitions.get(new Random().nextInt(randomDefinitions.size()));
+            if (!options.contains(randomDefinition)) {
+                options.add(randomDefinition);
+            }
         }
+        Collections.shuffle(options);
 
-        String[] choices = options.toArray(new String[0]);
         String selected = (String) JOptionPane.showInputDialog(
-                this, "Which slang word matches this definition?\n" + correctDefinition,
-                "Quiz", JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]
+                this,
+                "What does the slang \"" + correctSlang + "\" mean?",
+                "Quiz",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options.toArray(),
+                options.get(0)
+        );
+
+        if (correctDefinition.equals(selected)) {
+            JOptionPane.showMessageDialog(this, "Correct!");
+        } else {
+            JOptionPane.showMessageDialog(this, "Wrong! The correct answer is: " + correctDefinition);
+        }
+    } else {
+        // Style 2: Ask for slang
+        String correctSlang = keys.get(new Random().nextInt(keys.size()));
+        List<String> definitions = slangMap.get(correctSlang);
+        String correctDefinition = definitions.get(new Random().nextInt(definitions.size()));
+
+        // Create 4 options with slang words
+        List<String> options = new ArrayList<>();
+        options.add(correctSlang);
+        while (options.size() < 4) {
+            String randomSlang = keys.get(new Random().nextInt(keys.size()));
+            if (!options.contains(randomSlang)) {
+                options.add(randomSlang);
+            }
+        }
+        Collections.shuffle(options);
+
+        String selected = (String) JOptionPane.showInputDialog(
+                this,
+                "Which slang word matches this definition?\n" + correctDefinition,
+                "Quiz",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options.toArray(),
+                options.get(0)
         );
 
         if (correctSlang.equals(selected)) {
@@ -321,6 +367,7 @@ public class SlangDictionaryApp extends JFrame {
             JOptionPane.showMessageDialog(this, "Wrong! The correct answer is: " + correctSlang);
         }
     }
+}
 
 
     private void resetSlangWords() {
